@@ -1,0 +1,18 @@
+.DS_Store
+
+# Android
+android/.gradle/
+android/**/.gradle/
+android/**/build/
+android/local.properties
+android/**/local.properties
+android/.idea/
+android/app/.idea/
+
+# Node (sample server)
+server/node_modules/
+server/.env
+
+# iOS / Xcode
+ios/build/
+ios/**/xcuserdata/
