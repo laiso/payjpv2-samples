@@ -10,6 +10,7 @@
 | [`server/`](server/) | Node.js 製のサンプル API（商品一覧・Checkout Session 作成・Webhook 受信） |
 | [`ios/`](ios/) | iOS アプリ（SwiftUI・サンプル API と連携し Safari で Checkout を開く） |
 | [`flutter/`](flutter/) | Flutter アプリ（Android / iOS 共通・外部ブラウザで Checkout を開く） |
+| [`react-native/`](react-native/) | React Native アプリ（Android / iOS 共通・Linking で外部ブラウザ起動） |
 
 ## 前提条件
 
@@ -142,6 +143,13 @@ PAY.JP からの Webhook を受信します。`x-payjp-webhook-token` が `.env`
 2. iOS は初回のみ `flutter config --enable-swift-package-manager`（CocoaPods は不要・Podfile もコミットしていません）
 3. `flutter run` でエミュレータ / シミュレータに展開。バックエンド URL 既定値は Android エミュレータが `http://10.0.2.2:3000`、iOS シミュレータが `http://localhost:3000`。
 4. 詳細は [`flutter/README.md`](flutter/README.md)。
+
+### React Native
+
+1. `cd react-native && npm install`
+2. iOS は `cd ios && bundle install && bundle exec pod install && cd ..`
+3. `npm start` で Metro を起動、別シェルで `npm run android` または `npm run ios`
+4. 詳細は [`react-native/README.md`](react-native/README.md)。
 
 iOS アプリは `success_url` に戻った時点では「決済完了」ではなく、Webhook 確認待ちとして扱います。`success_url` は受付済みのシグナルであって、決済確定そのものではありません。
 
