@@ -128,7 +128,7 @@ app.post('/create-checkout-session', async (req, res) => {
           }
         ],
         mode: 'payment',
-        payment_method_types: ['card', 'paypay'],
+        payment_method_types: ['card', 'paypay', 'apple_pay'],
         success_url: success_url,
         cancel_url: cancel_url
       })

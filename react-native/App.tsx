@@ -1,6 +1,7 @@
 import React, {useCallback, useState} from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -73,12 +74,23 @@ export default function App() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
       const session = (await res.json()) as CheckoutSession;
-      const outcome = await WebBrowser.openAuthSessionAsync(
-        session.url,
-        REDIRECT_PREFIX,
-      );
-      if (outcome.type === 'success' && outcome.url) {
-        const kind = parseRedirect(outcome.url);
+
+      let receivedUrl: string | null = null;
+      const sub = Linking.addEventListener('url', ({url}) => {
+        if (parseRedirect(url)) {
+          receivedUrl = url;
+          WebBrowser.dismissBrowser();
+        }
+      });
+
+      try {
+        await WebBrowser.openBrowserAsync(session.url);
+      } finally {
+        sub.remove();
+      }
+
+      if (receivedUrl) {
+        const kind = parseRedirect(receivedUrl);
         if (kind === 'success') {
           setResultMessage(
             '決済受付が完了しました。Webhook での確定を確認してください。',
@@ -86,9 +98,9 @@ export default function App() {
         } else if (kind === 'cancel') {
           setResultMessage('キャンセルされました。');
         } else {
-          setResultMessage(`未知のリダイレクト: ${outcome.url}`);
+          setResultMessage(`未知のリダイレクト: ${receivedUrl}`);
         }
-      } else if (outcome.type === 'cancel' || outcome.type === 'dismiss') {
+      } else {
         setResultMessage('Checkout を閉じました。');
       }
     } catch (e: unknown) {
