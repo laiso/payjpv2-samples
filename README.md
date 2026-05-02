@@ -19,7 +19,43 @@
 - PAY.JP ダッシュボードで Price オブジェクトを作成済み
 - PayPay を使うテスト環境
 
-このサンプルサーバーは `payment_method_types` を `['card', 'paypay']` に固定しています。PayPay が有効でないアカウントでは Checkout Session 作成が失敗する可能性があります。
+### 支払い方法の切り替え
+
+このサンプルサーバーは `payment_method_types` を `['card', 'paypay', 'apple_pay']` に固定しています ([`server/index.js`](server/index.js))。**Checkout 画面に表示される支払い方法はこの配列を編集するだけで増減できます** — サーバー再起動のみで、クライアント (iOS/Android/Flutter/RN) のコード変更は不要です。
+
+```js
+// 例: Apple Pay を外す
+payment_method_types: ['card', 'paypay']
+
+// 例: Apple Pay 専用にする
+payment_method_types: ['apple_pay']
+```
+
+PayPay / Apple Pay が有効でないアカウントでは Checkout Session 作成が失敗する可能性があります。Apple Pay は test mode から追加申請なしに利用できます。
+
+### 対応支払い方法 × プラットフォーム
+
+| サンプル | Checkout 起動方法 | Card / PayPay | Apple Pay |
+|---|---|---|---|
+| iOS native | `SFSafariViewController` | ✅ | ✅ 対応端末で表示 |
+| Android native | Chrome Custom Tabs | ✅ | — (Android 端末のため非表示) |
+| Flutter | `url_launcher` (外部ブラウザ) | ✅ | ✅ iOS 対応端末で表示 / Android は非表示 |
+| React Native | `expo-web-browser.openBrowserAsync` (iOS: `SFSafariViewController` / Android: Chrome Custom Tabs) + `Linking` でリダイレクト検知 | ✅ | ✅ iOS 対応端末で表示 (Simulator でボタン描画まで確認済み) / Android は非表示 |
+
+Apple Pay ボタンは PAY.JP がホストする Checkout ページが端末側 (`window.ApplePaySession` の有無) で判定して描画するため、非対応端末・ブラウザではボタンは表示されません。
+
+### Apple Pay の動作確認 — 実機 + Apple Developer Program が必要
+
+Checkout 画面に Apple Pay の選択肢が描画されるところまでは iOS Simulator で確認できますが、**Apple Pay sheet を実際に開いて認証 → token 生成までを通す検証は Simulator では完結しません**。Wallet の card provisioning が Simulator では成立しないため、以下が必要です ([Apple Pay Sandbox Testing](https://developer.apple.com/apple-pay/sandbox-testing/)):
+
+- **有料 Apple Developer Program** メンバーシップ
+- **App Store Connect Sandbox tester アカウント** (Users and Access > Sandbox > Testers で作成)
+- **Apple Pay 対応の実機 iPhone**(iPad でも可)
+- 実機で iCloud からサインアウトし、**Sandbox tester アカウントでサインインし直す**
+- Region を Japan に設定
+- Wallet にテストカードを手動追加 (例: JCB `3540 5019 9000 9324` 12/30 CVV `111`)
+
+> Sandbox トランザクションは pre-fulfillment で decline します (本番キーと一致しないため)。本番環境での最終検証は実カード + 本番キーで別途必要です。
 
 ## サーバーセットアップ
 
